@@ -1,0 +1,18 @@
+services:
+  lambda:
+  # Deployed lambda name will be {name}-lambda-{id}
+    - name: h0ck-framework-testing
+      amount: 30
+      layers:
+      - layer-core-executor
+      - layer-framework-testing
+      timeout: 6
+      memory: 150
+    - name: h0ck-framework-scraping
+      amount: 10
+      layers:
+      - layer-core-executor
+      - layer-framework-scraping
+      timeout: 6
+      memory: 250
+
