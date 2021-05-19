@@ -1,0 +1,17 @@
+{
+  "name": "layer-core-executor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "require-from-string": "^2.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "layer-publish": "npx bestzip ../layer-build.zip ../nodejs/* && npx cross-env cross-env-shell 'aws lambda publish-layer-version --layer-name $npm_package_name --zip-file \\\"fileb://../layer-build.zip\\\" --description \\\"Core Framework for H0ck\\\"  --license-info \\\"MIT\\\" --compatible-runtimes nodejs12.x'"
+  },
+  "author": "",
+  "license": "ISC"
+}

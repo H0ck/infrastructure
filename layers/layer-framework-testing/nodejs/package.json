@@ -1,0 +1,23 @@
+{
+  "name": "layer-framework-testing",
+  "version": "1.0.0",
+  "description": "Lambda Layer used for the H0ck testing framework.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "layer-publish": "npx bestzip ../layer-build.zip ../nodejs/* && npx cross-env cross-env-shell 'aws lambda publish-layer-version --layer-name $npm_package_name --zip-file \\\"fileb://../layer-build.zip\\\" --description \\\"Core Framework for H0ck\\\"  --license-info \\\"MIT\\\" --compatible-runtimes nodejs12.x'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/H0ck/layer-framework-testing.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/H0ck/layer-framework-testing/issues"
+  },
+  "homepage": "https://github.com/H0ck/layer-framework-testing#readme",
+  "dependencies": {
+    "newman": "^5.2.3"
+  }
+}
