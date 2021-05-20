@@ -6,13 +6,14 @@ services:
       layers:
       - layer-core-executor
       - layer-framework-testing
-      timeout: 6
-      memory: 150
+      timeout: 8
+      memory: 512
     - name: h0ck-framework-scraping
-      amount: 10
+      amount: 1
       layers:
       - layer-core-executor
       - layer-framework-scraping
-      timeout: 6
-      memory: 250
+      timeout: 7
+      memory: 512
+      dockerFile: "./framework-scraping/.Dockerfile"
 
