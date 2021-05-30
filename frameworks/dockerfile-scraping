@@ -1,0 +1,15 @@
+FROM amazon/aws-lambda-nodejs:14
+RUN mkdir /tmp/build/
+COPY . /tmp/build/
+RUN echo $(ls /tmp/build)
+COPY /layers/layer-core-executor/ /opt
+WORKDIR /opt/nodejs/node_modules/lambdafs/node_modules/bl/node_modules/readable-stream/lib/internal/streams
+RUN echo $(ls)
+COPY /layers/layer-framework-scraping/ /opt
+WORKDIR /opt/nodejs/node_modules/lambdafs/node_modules/bl/node_modules/readable-stream/lib/internal/streams
+RUN echo $(ls)
+RUN mkdir -p /opt/disable-extensions-jwigqn8j
+EXPOSE 8080
+WORKDIR /opt/nodejs/node_modules/lambdafs/node_modules/bl/node_modules/readable-stream/lib/internal/streams
+RUN echo $(ls)
+CMD ["/opt/nodejs/executor.handler"]

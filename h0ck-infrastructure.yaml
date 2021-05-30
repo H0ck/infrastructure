@@ -2,18 +2,18 @@ services:
   lambda:
   # Deployed lambda name will be {name}-lambda-{id}
     - name: h0ck-framework-testing
-      amount: 30
+      amount: 3
       layers:
       - layer-core-executor
       - layer-framework-testing
       timeout: 8
       memory: 512
     - name: h0ck-framework-scraping
-      amount: 1
+      amount: 2
       layers:
       - layer-core-executor
       - layer-framework-scraping
-      timeout: 7
-      memory: 512
+      timeout: 8
+      memory: 712
       dockerFile: "./framework-scraping/.Dockerfile"
 
