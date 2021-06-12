@@ -1,22 +1,23 @@
 {
   "name": "h0ck-infrastructure",
-  "version": "0.1.0",
-  "bin": {
-    "infrastructure": "bin/infrastructure.js"
-  },
+  "version": "0.33.0",
+  "main": "cmd.js",
+  "bin": "./cmd.js",
   "scripts": {
     "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
+    "up": "npm version minor --git-tag-version false && npm publish",
     "cdk": "cdk",
     "test": "jest"
   },
   "devDependencies": {
-    "aws-cdk": "2.0.0-rc.4",
     "jest": "^26.4.2"
   },
   "dependencies": {
-    "@aws-cdk/aws-s3": "^1.106.1",
+    "aws-cdk": "2.0.0-rc.4",
     "aws-cdk-lib": "2.0.0-rc.4",
+    "aws-sdk": "^2.925.0",
     "constructs": "^10.0.0",
-    "dotenv": "^10.0.0"
+    "dotenv": "^10.0.0",
+    "js-yaml": "^4.1.0"
   }
 }

@@ -1,17 +1,10 @@
 version: "3.9"  # optional since v1.27.0
 services:
-  h0ck-core:
-    container_name: "h0ck-core"
-    image: "h0ck/core:latest"
-    ports:
-      - "7001:7001"
-    depends_on: 
-      - redis
-    environment: 
-      - REDIS_HOST=h0ck-redis
-      - REDIS_PORT=6379
+
   redis:
     container_name: "h0ck-redis"
     image: "bitnami/redis:latest"
+    ports: 
+      - 6379:6379
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
