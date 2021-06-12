@@ -25,7 +25,7 @@ if (args.length === 0) {
 
         cdkutils.deploy(['EC2Stack', 'LambdasStack']).then(outputs => {
             console.log("Storing outputs in frontend", outputs)
-            let infrastructureJson = { "h0ck_core": outputs?.EC2Stack?.h0ckec2publicip };
+            let infrastructureJson = { "h0ck_core": "http://" + outputs?.EC2Stack?.h0ckec2publicip + ":7001"};
             console.log(infrastructureJson)
             fs.writeFileSync(path.join(__dirname, "/frontfiles/infrastructure.json"), JSON.stringify(infrastructureJson));
             console.log("Starting front deploy")

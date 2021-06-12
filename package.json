@@ -1,6 +1,6 @@
 {
   "name": "h0ck-infrastructure",
-  "version": "0.33.0",
+  "version": "0.36.0",
   "main": "cmd.js",
   "bin": "./cmd.js",
   "scripts": {
