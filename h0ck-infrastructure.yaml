@@ -2,7 +2,7 @@ services:
   lambda:
   # Deployed lambda name will be {name}-lambda-{id}
     - name: h0ck-framework-testing
-      amount: 1
+      amount: 10
       layers:
       - layer-core-executor
       - layer-framework-testing
