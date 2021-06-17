@@ -1,6 +1,6 @@
 {
   "name": "h0ck-infrastructure",
-  "version": "0.38.0",
+  "version": "0.71.0",
   "main": "cmd.js",
   "bin": "./cmd.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "test": "jest"
   },
   "devDependencies": {
-    "jest": "^26.4.2"
+    "jest": "^26.4.2",
+    "typescript": "^4.3.2"
   },
   "dependencies": {
     "aws-cdk": "2.0.0-rc.4",
@@ -18,6 +19,7 @@
     "aws-sdk": "^2.925.0",
     "constructs": "^10.0.0",
     "dotenv": "^10.0.0",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "terminal-kit": "^2.1.5"
   }
 }

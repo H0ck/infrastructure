@@ -18,3 +18,4 @@ services:
     environment: 
       - REDIS_HOST=h0ck-redis
       - REDIS_PORT=6379
+      - CDK_DEFAULT_REGION=${CDK_DEFAULT_REGION}

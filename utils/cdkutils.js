@@ -50,11 +50,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var fs = require("fs");
 var path = require("path");
+var cxapi = require("aws-cdk-lib/cx-api");
 var aws_auth_1 = require("aws-cdk/lib/api/aws-auth");
 var cloudformation_deployments_1 = require("aws-cdk/lib/api/cloudformation-deployments");
 var cloud_executable_1 = require("aws-cdk/lib/api/cxapp/cloud-executable");
 var exec_1 = require("aws-cdk/lib/api/cxapp/exec");
 var toolkit_info_1 = require("aws-cdk/lib/api/toolkit-info");
+var bootstrap_1 = require("aws-cdk/lib/api/bootstrap");
 var cdk_toolkit_1 = require("aws-cdk/lib/cdk-toolkit");
 var diff_1 = require("aws-cdk/lib/diff");
 var logging_1 = require("aws-cdk/lib/logging");
@@ -65,9 +67,53 @@ var deployOptions = /** @class */ (function () {
     }
     return deployOptions;
 }());
+function determineBootsrapVersion(args, configuration) {
+    var isV1 = version.DISPLAY_VERSION.startsWith('1.');
+    return isV1 ? determineV1BootstrapSource(args, configuration) : determineV2BootstrapSource(args);
+}
+function determineV1BootstrapSource(args, configuration) {
+    var source;
+    if (args.template) {
+        console.log("Using bootstrapping template from " + args.template);
+        source = { source: 'custom', templateFile: args.template };
+    }
+    else if (process.env.CDK_NEW_BOOTSTRAP) {
+        console.log('CDK_NEW_BOOTSTRAP set, using new-style bootstrapping');
+        source = { source: 'default' };
+    }
+    else if (isFeatureEnabled(configuration, cxapi.NEW_STYLE_STACK_SYNTHESIS_CONTEXT)) {
+        console.log("'" + cxapi.NEW_STYLE_STACK_SYNTHESIS_CONTEXT + "' context set, using new-style bootstrapping");
+        source = { source: 'default' };
+    }
+    else {
+        // in V1, the "legacy" bootstrapping is the default
+        source = { source: 'legacy' };
+    }
+    return source;
+}
+function determineV2BootstrapSource(args) {
+    var source;
+    if (args.template) {
+        console.log("Using bootstrapping template from " + args.template);
+        source = { source: 'custom', templateFile: args.template };
+    }
+    else if (process.env.CDK_LEGACY_BOOTSTRAP) {
+        console.log('CDK_LEGACY_BOOTSTRAP set, using legacy-style bootstrapping');
+        source = { source: 'legacy' };
+    }
+    else {
+        // in V2, the "new" bootstrapping is the default
+        source = { source: 'default' };
+    }
+    return source;
+}
+function isFeatureEnabled(configuration, featureFlag) {
+    var _a;
+    return (_a = configuration.context.get(featureFlag)) !== null && _a !== void 0 ? _a : cxapi.futureFlagDefault(featureFlag);
+}
 function deploy(stackNamesList, options) {
     return __awaiter(this, void 0, void 0, function () {
-        var tempConfig, configuration, sdkProvider, cloudFormation, cloudExecutable, toolkitStackName, stacks, cli, data, dataParsed;
+        var tempConfig, configuration, sdkProvider, cloudFormation, cloudExecutable, toolkitStackName, stacks, cli, source, bootstrapper, data, dataParsed;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -84,10 +130,10 @@ function deploy(stackNamesList, options) {
                     _a.sent();
                     return [4 /*yield*/, aws_auth_1.SdkProvider.withAwsCliCompatibleDefaults({
                             profile: configuration.settings.get(['profile']),
-                            ec2creds: null,
+                            ec2creds: undefined,
                             httpOptions: {
-                                proxyAddress: null,
-                                caBundlePath: null
+                                proxyAddress: undefined,
+                                caBundlePath: undefined
                             }
                         })];
                 case 2:
@@ -111,6 +157,20 @@ function deploy(stackNamesList, options) {
                         sdkProvider: sdkProvider
                     });
                     console.log((options === null || options === void 0 ? void 0 : options.force) ? "Forcing" : "Not forcing");
+                    source = determineBootsrapVersion({}, configuration);
+                    bootstrapper = new bootstrap_1.Bootstrapper(source);
+                    console.log("Bootstraping");
+                    return [4 /*yield*/, cli.bootstrap([], bootstrapper, {
+                            toolkitStackName: toolkitStackName,
+                            tags: configuration.settings.get(['tags']),
+                            parameters: {
+                                bucketName: configuration.settings.get(['toolkitBucket', 'bucketName']),
+                                kmsKeyId: configuration.settings.get(['toolkitBucket', 'kmsKeyId'])
+                            }
+                        })];
+                case 3:
+                    _a.sent();
+                    console.log("Bootstraped");
                     return [4 /*yield*/, cli.deploy({
                             stackNames: stacks,
                             toolkitStackName: toolkitStackName,
@@ -120,7 +180,7 @@ function deploy(stackNamesList, options) {
                             tags: configuration.settings.get(['tags']),
                             progress: configuration.settings.get(['progress'])
                         })];
-                case 3:
+                case 4:
                     _a.sent();
                     data = fs.readFileSync('./tmpOutputFileDeployment.json', { encoding: 'utf8' });
                     fs.unlinkSync('./tmpOutputFileDeployment.json');
@@ -149,10 +209,10 @@ function destroy() {
                     _a.sent();
                     return [4 /*yield*/, aws_auth_1.SdkProvider.withAwsCliCompatibleDefaults({
                             profile: configuration.settings.get(['profile']),
-                            ec2creds: null,
+                            ec2creds: undefined,
                             httpOptions: {
-                                proxyAddress: null,
-                                caBundlePath: null
+                                proxyAddress: undefined,
+                                caBundlePath: undefined
                             }
                         })];
                 case 2:
@@ -179,7 +239,7 @@ function destroy() {
                             stackNames: stacks,
                             exclusively: false,
                             force: true,
-                            roleArn: null
+                            roleArn: undefined
                         })];
             }
         });
