@@ -69,7 +69,7 @@ function createKeyPairIfNotExists() {
                     }
                 })
             }
-           
+
         }
     });
 }
@@ -99,21 +99,18 @@ function checkEnvVars() {
 
 async function preconfig() {
     await checkEnvVars();
-    AWS.config.update({ region: process.env.CDK_DEFAULT_REGION });
+    AWS.config.update({ region: process.env.CDK_DEFAULT_REGION, credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
     ec2 = new AWS.EC2({ apiVersion: '2016-11-15' });
 }
 
 async function deploy() {
     await preconfig();
-    console.log(process.env.CDK_DEFAULT_REGION)
     createKeyPairIfNotExists();
-    await cdkutils.deploy(['EC2Stack', 'LambdasStack']).then(async function(outputs){
-        console.log("Storing outputs in frontend", outputs)
+    await cdkutils.deploy('/bin/infrastructure.js', false, ['EC2Stack', 'LambdasStack'], false).then(async function (outputs) {
         let infrastructureJson = { "h0ck_core": "http://" + outputs?.EC2Stack?.h0ckec2publicip + ":7001" };
-        console.log(infrastructureJson)
         fs.writeFileSync(path.join(__dirname, "/frontfiles/infrastructure.json"), JSON.stringify(infrastructureJson));
-        console.log("Starting front deploy")
-        await cdkutils.deploy(['FrontStack'], { force: true }).then(outputs => {
+        let data = fs.readFileSync(path.join(__dirname, "/frontfiles/infrastructure.json"), 'utf8');
+        await cdkutils.deploy('/bin/infrastructurefront.js', true, ['FrontStack'], { force: true }, true).then(outputs => {
             console.log("Deployment finished")
         })
     });
@@ -122,7 +119,8 @@ async function deploy() {
 async function destroy() {
     await preconfig();
     deleteKeyPairIfExists();
-    await cdkutils.destroy();
+    await cdkutils.destroy('/bin/infrastructurefront.js', false);
+    await cdkutils.destroy('/bin/infrastructure.js', true);
 }
 
 if (args.length === 0) {

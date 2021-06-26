@@ -67,6 +67,56 @@ var deployOptions = /** @class */ (function () {
     }
     return deployOptions;
 }());
+var configuration = null;
+var sdkProvider = null;
+var cloudFormation = null;
+var cloudExecutable = null;
+var toolkitStackName = null;
+var loaded = false;
+function preLoad(appFile, force) {
+    return __awaiter(this, void 0, void 0, function () {
+        var tempConfig;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!(!loaded || force)) return [3 /*break*/, 3];
+                    //Set the default region specified in the CDK var
+                    process.env.AWS_DEFAULT_REGION = process.env.CDK_DEFAULT_REGION;
+                    logging_1.debug('CDK toolkit version:', version.DISPLAY_VERSION);
+                    tempConfig = {
+                        app: 'node ' + path.join(__dirname, '../', appFile),
+                        _: {}
+                    };
+                    configuration = new settings_1.Configuration({
+                        commandLineArguments: __assign(__assign({}, tempConfig), { _: tempConfig._ })
+                    });
+                    return [4 /*yield*/, configuration.load()];
+                case 1:
+                    _a.sent();
+                    return [4 /*yield*/, aws_auth_1.SdkProvider.withAwsCliCompatibleDefaults({
+                            profile: configuration.settings.get(['profile']),
+                            ec2creds: undefined,
+                            httpOptions: {
+                                proxyAddress: undefined,
+                                caBundlePath: undefined
+                            }
+                        })];
+                case 2:
+                    sdkProvider = _a.sent();
+                    cloudFormation = new cloudformation_deployments_1.CloudFormationDeployments({ sdkProvider: sdkProvider });
+                    cloudExecutable = new cloud_executable_1.CloudExecutable({
+                        configuration: configuration,
+                        sdkProvider: sdkProvider,
+                        synthesizer: exec_1.execProgram
+                    });
+                    toolkitStackName = toolkit_info_1.ToolkitInfo.determineName(configuration.settings.get(['toolkitStackName']));
+                    loaded = true;
+                    _a.label = 3;
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
 function determineBootsrapVersion(args, configuration) {
     var isV1 = version.DISPLAY_VERSION.startsWith('1.');
     return isV1 ? determineV1BootstrapSource(args, configuration) : determineV2BootstrapSource(args);
@@ -111,40 +161,14 @@ function isFeatureEnabled(configuration, featureFlag) {
     var _a;
     return (_a = configuration.context.get(featureFlag)) !== null && _a !== void 0 ? _a : cxapi.futureFlagDefault(featureFlag);
 }
-function deploy(stackNamesList, options) {
+function deploy(appFile, forceConfig, stackNamesList, options) {
     return __awaiter(this, void 0, void 0, function () {
-        var tempConfig, configuration, sdkProvider, cloudFormation, cloudExecutable, toolkitStackName, stacks, cli, source, bootstrapper, data, dataParsed;
+        var stacks, cli, source, bootstrapper, data, dataParsed;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    logging_1.debug('CDK toolkit version:', version.DISPLAY_VERSION);
-                    tempConfig = {
-                        app: 'node ' + path.join(__dirname, '../bin/infrastructure.js'),
-                        _: {}
-                    };
-                    configuration = new settings_1.Configuration({
-                        commandLineArguments: __assign(__assign({}, tempConfig), { _: tempConfig._ })
-                    });
-                    return [4 /*yield*/, configuration.load()];
+                case 0: return [4 /*yield*/, preLoad(appFile, forceConfig)];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, aws_auth_1.SdkProvider.withAwsCliCompatibleDefaults({
-                            profile: configuration.settings.get(['profile']),
-                            ec2creds: undefined,
-                            httpOptions: {
-                                proxyAddress: undefined,
-                                caBundlePath: undefined
-                            }
-                        })];
-                case 2:
-                    sdkProvider = _a.sent();
-                    cloudFormation = new cloudformation_deployments_1.CloudFormationDeployments({ sdkProvider: sdkProvider });
-                    cloudExecutable = new cloud_executable_1.CloudExecutable({
-                        configuration: configuration,
-                        sdkProvider: sdkProvider,
-                        synthesizer: exec_1.execProgram
-                    });
-                    toolkitStackName = toolkit_info_1.ToolkitInfo.determineName(configuration.settings.get(['toolkitStackName']));
                     logging_1.debug("Toolkit stack: " + toolkitStackName);
                     stacks = stackNamesList || ['*'];
                     cli = new cdk_toolkit_1.CdkToolkit({
@@ -168,9 +192,14 @@ function deploy(stackNamesList, options) {
                                 kmsKeyId: configuration.settings.get(['toolkitBucket', 'kmsKeyId'])
                             }
                         })];
-                case 3:
+                case 2:
                     _a.sent();
                     console.log("Bootstraped");
+                    console.log("Synth");
+                    return [4 /*yield*/, cli.synth(stacks, false, false)];
+                case 3:
+                    _a.sent();
+                    console.log("Synthed");
                     return [4 /*yield*/, cli.deploy({
                             stackNames: stacks,
                             toolkitStackName: toolkitStackName,
@@ -190,41 +219,15 @@ function deploy(stackNamesList, options) {
         });
     });
 }
-function destroy() {
+function destroy(appFile, forceConfig) {
     return __awaiter(this, void 0, void 0, function () {
-        var tempConfig, configuration, sdkProvider, cloudFormation, cloudExecutable, toolkitStackName, stacks, cli;
+        var stacks, cli;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    logging_1.debug('CDK toolkit version:', version.DISPLAY_VERSION);
-                    tempConfig = {
-                        app: 'node ' + path.join(__dirname, '../bin/infrastructure.js'),
-                        _: {}
-                    };
-                    configuration = new settings_1.Configuration({
-                        commandLineArguments: __assign(__assign({}, tempConfig), { _: tempConfig._ })
-                    });
-                    return [4 /*yield*/, configuration.load()];
+                case 0: return [4 /*yield*/, preLoad(appFile, forceConfig)];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, aws_auth_1.SdkProvider.withAwsCliCompatibleDefaults({
-                            profile: configuration.settings.get(['profile']),
-                            ec2creds: undefined,
-                            httpOptions: {
-                                proxyAddress: undefined,
-                                caBundlePath: undefined
-                            }
-                        })];
-                case 2:
-                    sdkProvider = _a.sent();
-                    cloudFormation = new cloudformation_deployments_1.CloudFormationDeployments({ sdkProvider: sdkProvider });
-                    cloudExecutable = new cloud_executable_1.CloudExecutable({
-                        configuration: configuration,
-                        sdkProvider: sdkProvider,
-                        synthesizer: exec_1.execProgram
-                    });
-                    toolkitStackName = toolkit_info_1.ToolkitInfo.determineName(configuration.settings.get(['toolkitStackName']));
-                    logging_1.debug("Toolkit stack: " + toolkitStackName);
+                    logging_1.debug('CDK toolkit version:', version.DISPLAY_VERSION);
                     stacks = ['*'];
                     cli = new cdk_toolkit_1.CdkToolkit({
                         cloudExecutable: cloudExecutable,

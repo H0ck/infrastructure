@@ -37,8 +37,8 @@ const app = new cdk.App();
 
 // infrastructureStack2.addDependency(infrastructureStack);
 //infrastructureStack.addDependency(imagesStack);
-let lambdas = new LambdasStack(app, 'LambdasStack', {});
-let ec2Stack = new EC2Stack(app, 'EC2Stack', {});
+
+let frontStack = new FrontStack(app, 'FrontStack', {});
 
 
 
